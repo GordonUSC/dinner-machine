@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>World Tour Dinner Machine</title>
+<meta name="description" content="For David and Ian: pull the lever, land a dinner, hand the words to an AI agent.">
+<meta property="og:title" content="David &amp; Ian's World Tour Dinner Machine">
+<meta property="og:image" content="https://gordonusc.github.io/dinner-machine/hero.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight&family=Josefin+Sans:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap">
+<style>
+:root{--ink:#0f2a22;--emerald:#0e4a3a;--emerald2:#13634d;--brass:#c9a24a;--brass2:#f0d58a;--cream:#f6eedb;--paper:#fbf6ea;--rose:#b5523b;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:17px/1.55 "Josefin Sans",system-ui,sans-serif;padding:0 16px 48px}
+.wrap{max-width:760px;margin:0 auto}
+header{text-align:center;padding-block:28px 8px}
+.kicker{letter-spacing:.22em;text-transform:uppercase;font-size:13px;color:var(--emerald2);font-weight:700}
+h1{font-family:Limelight,Georgia,serif;font-weight:400;font-size:clamp(34px,8vw,58px);line-height:1.05;margin:.25em 0 .2em;color:var(--emerald);text-wrap:balance}
+.sub{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:22px;margin:0 auto;max-width:34ch}
+.hero{margin:22px auto 0;border-radius:18px;overflow:hidden;border:3px solid var(--brass);box-shadow:0 18px 40px -18px #0f2a2288;max-width:520px}
+.hero img{display:block;width:100%;height:auto}
+.machine{margin:34px auto 0;max-width:560px;background:linear-gradient(160deg,var(--emerald2),var(--emerald) 60%,#0a3a2d);border:4px solid var(--brass);border-radius:28px;padding:22px 18px 20px;position:relative;box-shadow:inset 0 0 0 2px #f0d58a55,0 24px 50px -20px #0f2a22aa}
+.marquee{text-align:center;font-family:Limelight,Georgia,serif;color:var(--brass2);font-size:24px;letter-spacing:.06em;margin-bottom:14px}
+.bulbs{display:flex;justify-content:space-between;margin:0 6px 12px}
+.bulbs i{width:9px;height:9px;border-radius:50%;background:var(--brass2);box-shadow:0 0 8px var(--brass2);opacity:.35;transition:opacity .2s}
+.bulbs.on i:nth-child(odd){opacity:1}.bulbs.on2 i:nth-child(even){opacity:1}
+.reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.reel{background:var(--cream);border:3px solid var(--brass);border-radius:14px;height:132px;overflow:hidden;position:relative;box-shadow:inset 0 10px 14px -8px #0006,inset 0 -10px 14px -8px #0006}
+.reel .label{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.2em;color:var(--emerald2);font-weight:700;z-index:2}
+.strip{position:absolute;left:0;right:0;top:0;will-change:transform}
+.cell{height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px 6px 4px}
+.cell .ico{font-size:34px;line-height:1}
+.cell .t{font-weight:700;font-size:15px;line-height:1.15;margin-top:6px;color:var(--ink)}
+.ctl{display:flex;gap:8px;justify-content:center;margin:-4px 0 12px}.mini{font:600 13px 'Josefin Sans',sans-serif;letter-spacing:.1em;padding:6px 12px;border-radius:999px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}.mini[aria-pressed=false]{opacity:.6}
+.holds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+.hold{font:600 13px "Josefin Sans",sans-serif;letter-spacing:.16em;padding:8px 0;border-radius:10px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}
+.hold[aria-pressed=true]{background:var(--brass);color:var(--emerald)}
+.pull{display:block;width:100%;margin-top:14px;font:400 26px Limelight,Georgia,serif;letter-spacing:.06em;padding:14px;border-radius:16px;border:0;cursor:pointer;color:var(--emerald);background:linear-gradient(180deg,var(--brass2),var(--brass));box-shadow:0 6px 0 #8a6a22,0 10px 20px -6px #000a;transition:transform .08s,box-shadow .08s}
+.pull:active{transform:translateY(5px);box-shadow:0 1px 0 #8a6a22}
+.pull:disabled{opacity:.7;cursor:default}
+.lever{position:absolute;right:-26px;top:70px;width:22px;height:120px;cursor:pointer;touch-action:none}
+.lever .rod{position:absolute;left:8px;top:18px;width:6px;height:100px;background:linear-gradient(90deg,#8a6a22,var(--brass2),#8a6a22);border-radius:3px;transform-origin:50% 100%;transition:transform .25s}
+.lever .knob{position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff9b84,var(--rose));transition:transform .25s}
+.lever.down .rod{transform:scaleY(.25)}.lever.down .knob{transform:translateY(76px)}
+@media (max-width:620px){.lever{display:none}}
+.opts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px;color:var(--cream);font-size:15px}
+.opts label{display:flex;gap:6px;align-items:center}
+.opts select{font:600 15px "Josefin Sans",sans-serif;padding:4px 6px;border-radius:8px;border:2px solid var(--brass);background:var(--cream);color:var(--ink)}
+.ticket{margin:26px auto 0;max-width:560px;background:var(--cream);border:2px dashed var(--brass);border-radius:16px;padding:18px 18px 16px}
+.ticket h2{font-family:Limelight,Georgia,serif;font-weight:400;color:var(--emerald);margin:0 0 6px;font-size:24px}
+.ticket p.note{margin:0 0 10px;font-size:15px}
+.prompt{background:#fff;border-radius:10px;padding:12px 14px;font-size:16px;border:1px solid #e6dcc3;white-space:pre-wrap;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn{font:700 15px "Josefin Sans",sans-serif;letter-spacing:.08em;padding:10px 16px;border-radius:12px;border:2px solid var(--emerald);background:var(--emerald);color:var(--cream);cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--emerald)}
+section.how{margin:40px auto 0;max-width:640px}
+section.how h2{font-family:Limelight,Georgia,serif;font-weight:400;color:var(--emerald);text-align:center;font-size:30px;margin:0 0 14px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:620px){.steps{grid-template-columns:1fr}}
+.step{border-top:3px solid var(--brass);padding-top:10px;min-width:0}
+.step b{display:block;font-size:13px;letter-spacing:.2em;color:var(--rose)}
+.step h3{margin:2px 0 4px;font-size:20px}
+.step p{margin:0;font-size:16px}
+.letter{margin:40px auto 0;max-width:600px;font-family:"Cormorant Garamond",Georgia,serif;font-size:21px;line-height:1.5}
+.letter .sig{font-style:italic}
+footer{margin:36px auto 0;max-width:600px;font-size:14px;color:#41594f;border-top:1px solid #e3d8bd;padding-top:12px}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){.strip{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+<header>
+  <div class="kicker">Made for David &amp; Ian</div>
+  <h1>The World Tour Dinner Machine</h1>
+  <p class="sub">For the man behind Lightning Box: a machine that pays out in tables for two.</p>
+  <div class="hero"><img src="hero.jpg" alt="An art deco slot machine on a terrace over Sydney Harbour, reels landed on an airplane, a dinner plate and two wine glasses" width="900" height="1200"></div>
+</header>
+
+<div class="machine" id="machine">
+  <div class="marquee">PULL FOR DINNER</div>
+  <div class="ctl"><button class="mini" id="hello">▶ Hear from Darby</button><button class="mini" id="snd" aria-pressed="true">Sound on</button></div>
+  <div class="bulbs" id="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="reels">
+    <div class="reel"><div class="label">CITY</div><div class="strip" id="r0"></div></div>
+    <div class="reel"><div class="label">MOOD</div><div class="strip" id="r1"></div></div>
+    <div class="reel"><div class="label">SPLURGE</div><div class="strip" id="r2"></div></div>
+  </div>
+  <div class="holds">
+    <button class="hold" aria-pressed="false" data-i="0">HOLD</button>
+    <button class="hold" aria-pressed="false" data-i="1">HOLD</button>
+    <button class="hold" aria-pressed="false" data-i="2">HOLD</button>
+  </div>
+  <div class="opts">
+    <label>Nights <select id="nights"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>7</option></select></label>
+    <label>Month <select id="month"></select></label>
+  </div>
+  <button class="pull" id="pull">PULL</button>
+  <div class="lever" id="lever" aria-hidden="true"><div class="rod"></div><div class="knob"></div></div>
+  <p class="sr" aria-live="polite" id="live"></p>
+</div>
+
+<div class="ticket" id="ticket">
+  <h2>Your payout</h2>
+  <p class="note">Copy this, paste it into Claude or ChatGPT, and let it do the legwork. Ask it to stop before submitting, so the final yes stays yours.</p>
+  <div class="prompt" id="prompt">Pull the lever to land your first dinner.</div>
+  <div class="row">
+    <button class="btn" id="copy">Copy the words</button>
+    <a class="btn ghost" href="https://claude.ai/new" target="_blank" rel="noopener">Open Claude</a>
+    <a class="btn ghost" href="https://chatgpt.com/" target="_blank" rel="noopener">Open ChatGPT</a>
+  </div>
+</div>
+
+<section class="how">
+  <h2>What an agent actually is</h2>
+  <div class="steps">
+    <div class="step"><b>1 · THE BRAIN</b><h3>Claude or ChatGPT</h3><p>Off the shelf. Anthropic makes Claude, OpenAI makes ChatGPT. Both are excellent at the shortlist.</p></div>
+    <div class="step"><b>2 · THE HANDS</b><h3>A browser it can drive</h3><p>The newest versions can open a website and fill in a booking for you. Claude does it on a laptop through Claude in Chrome; on ChatGPT it depends on your plan, so ask it.</p></div>
+    <div class="step"><b>3 · THE RULES</b><h3>You keep the last click</h3><p>Ask it to stop before submitting. Check the local date, time, party size, deposit and cancellation terms, then book.</p></div>
+  </div>
+</section>
+
+<div class="letter">
+  <p>David and Ian, Gordon says you have been in his corner for twenty years, and that every Scholar you have backed has felt it. You know better than anyone that a great machine is mostly feel: the timing of the reels, the sound of the stop. Agents are the same. This one is a small thank you, and a first lesson: the agent does the legwork, and you two stay the ones with taste.</p>
+  <p>I'm curious where the tour goes first. Reply to my email with the cities and rough dates, and I'll show you how I'd plan the dinners, step by step.</p>
+  <p class="sig">Darby, Gordon's AI assistant</p>
+</div>
+
+<footer>Made by Darby, an AI assistant built on Claude (Anthropic) that works for Gordon Bellamy, at Gordon's request. This page stores nothing and sends nothing. The restaurant picks come from whichever AI you paste the words into, so check each place on its own site before you go.</footer>
+</div>
+
+<script>
+const CITY=[["🗼","Tokyo"],["🌉","Lisbon"],["🌮","Mexico City"],["🥐","Paris"],["🚲","Copenhagen"],["🍜","Hanoi"],["💃","Buenos Aires"],["🏔️","Cape Town"],["🗽","New York"],["🕌","Istanbul"],["🌴","Palm Springs"],["⛵","Sydney"]];
+const MOOD=[["🌊","a water view"],["🔪","a chef's counter"],["🕯️","candlelit and quiet"],["🎉","loud and joyful"],["🧺","a market crawl"],["🎩","an old-school classic"],["🌱","a garden table"],["🌈","a queer-owned favorite"]];
+const SPL=[["🪙","easy, under $40 each"],["💵","nice, $40 to $90 each"],["💎","special, $90 to $200 each"],["👑","the big one, no ceiling"]];
+const SETS=[CITY,MOOD,SPL], H=132, REP=12;
+const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const ms=document.getElementById('month'); const now=new Date();
+for(let k=1;k<=12;k++){const m=months[(now.getMonth()+k)%12]; const o=document.createElement('option'); o.textContent=m; if(m==='June')o.selected=true; ms.appendChild(o);}
+const strips=[0,1,2].map(i=>document.getElementById('r'+i));
+const pos=[0,0,0], held=[false,false,false], result=[0,0,0];
+strips.forEach((s,i)=>{let h='';for(let r=0;r<REP;r++)SETS[i].forEach(([ic,t])=>h+=`<div class="cell"><span class="ico">${ic}</span><span class="t">${t}</span></div>`);s.innerHTML=h;});
+document.querySelectorAll('.hold').forEach(b=>b.onclick=()=>{const i=+b.dataset.i; if(!pos.some(p=>p)) return; held[i]=!held[i]; b.setAttribute('aria-pressed',held[i]); play('click',.7);});
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let ctx=null, bufs={}, soundOn=true, spinSrc=null;
+function ac(){ if(!ctx){ try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(ctx&&ctx.state==='suspended') ctx.resume(); return ctx; }
+async function load(n){ if(bufs[n]) return bufs[n]; const c=ac(); if(!c) return null; try{ const r=await fetch('snd/'+n+'.mp3'); const a=await r.arrayBuffer(); bufs[n]=await new Promise((ok,no)=>c.decodeAudioData(a,ok,no)); return bufs[n]; }catch(e){ return null; } }
+async function play(n,vol,loop){ if(!soundOn) return null; const c=ac(); const b=await load(n); if(!c||!b) return null; const s=c.createBufferSource(), g=c.createGain(); s.buffer=b; s.loop=!!loop; if(loop){s.loopStart=.05;s.loopEnd=b.duration-.05;} g.gain.value=vol||1; s.connect(g).connect(c.destination); s.start(); return {s,g}; }
+function stopNode(r,t){ if(!r||!ctx) return; const n=ctx.currentTime; r.g.gain.setValueAtTime(r.g.gain.value,n); r.g.gain.linearRampToValueAtTime(0,n+(t||.08)); r.s.stop(n+(t||.08)+.02); }
+function tone(){ play('click',.7); }
+function tick(){}
+function chime(){ play('jackpot',.9); }
+['lever','spin','stop','jackpot','click'].forEach(n=>{ document.addEventListener('pointerdown',()=>load(n),{once:true}); });
+const bulbs=document.getElementById('bulbs'); let bt=null;
+function lights(on){ clearInterval(bt); bulbs.className='bulbs'; if(on){ let f=0; bt=setInterval(()=>{bulbs.className='bulbs '+(f++%2?'on':'on2');},140);} }
+function spinReel(i,dur){ return new Promise(res=>{ const n=SETS[i].length; const target=Math.floor(Math.random()*n); result[i]=target;
+  const startIdx=n*2+target, endIdx=n*(REP-2)+target; const s=strips[i];
+  if(reduce){ s.style.transition='none'; s.style.transform=`translateY(${-endIdx*H}px)`; pos[i]=endIdx; return res(); }
+  s.style.transition='none'; s.style.transform=`translateY(${-(startIdx)*H}px)`; s.offsetHeight;
+  s.style.transition=`transform ${dur}ms cubic-bezier(.12,.8,.18,1.02)`; s.style.transform=`translateY(${-endIdx*H}px)`;
+  let t=0; const iv=setInterval(()=>{ if((t+=90)<dur*.8) tick(); },90);
+  setTimeout(()=>{clearInterval(iv); play('stop',.9); pos[i]=endIdx; res();},dur); }); }
+const pull=document.getElementById('pull'), lever=document.getElementById('lever');
+async function go(){ if(pull.disabled) return; pull.disabled=true; ac(); lever.classList.add('down'); setTimeout(()=>lever.classList.remove('down'),350); lights(true); play('lever',1); play('spin',.55,true).then(r=>{spinSrc=r;});
+  const jobs=[0,1,2].map(i=> held[i]? Promise.resolve() : spinReel(i,1400+i*550));
+  await Promise.all(jobs); stopNode(spinSrc,.15); spinSrc=null; lights(false); chime(); confetti(); write(); pull.disabled=false; pull.textContent='PULL AGAIN'; }
+pull.onclick=go; lever.onclick=go; document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target===document.body){ e.preventDefault(); go(); }});
+function write(){ const c=CITY[result[0]][1], m=MOOD[result[1]][1], s=SPL[result[2]][1];
+  const n=document.getElementById('nights').value, mo=ms.value;
+  const txt=`We're David and Ian from Sydney, spending ${n} nights in ${c} in ${mo}. One dinner should be ${m}, at ${s}.\n\nGive us 5 restaurants that fit, with why each one is right for us, price per person, how far ahead to book, and the official booking link.\n\nIf you can, prepare the booking for 2 people and stop before submitting, so I can check the date, time, deposit and cancellation terms.`;
+  document.getElementById('prompt').textContent=txt; document.getElementById('live').textContent=`Landed: ${c}, ${m}, ${s}.`; }
+document.getElementById('copy').onclick=async(e)=>{ const t=document.getElementById('prompt').textContent; try{ await navigator.clipboard.writeText(t); e.target.textContent='Copied ✓'; }catch(err){ const r=document.createRange(); r.selectNodeContents(document.getElementById('prompt')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); e.target.textContent='Selected, now copy'; } setTimeout(()=>e.target.textContent='Copy the words',1800); };
+const fx=document.getElementById('fx'), g=fx.getContext('2d'); let parts=[];
+function size(){fx.width=innerWidth*devicePixelRatio; fx.height=innerHeight*devicePixelRatio;} size(); addEventListener('resize',size);
+function confetti(){ if(reduce) return; const r=document.getElementById('machine').getBoundingClientRect(); for(let k=0;k<120;k++) parts.push({x:(r.left+r.width/2)*devicePixelRatio,y:(r.top+60)*devicePixelRatio,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,a:1,c:['#f0d58a','#c9a24a','#ffffff','#b5523b','#13634d'][k%5],s:4+Math.random()*6}); if(parts.length<=120) loop(); }
+function loop(){ g.clearRect(0,0,fx.width,fx.height); parts.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;p.a-=.008;g.globalAlpha=Math.max(p.a,0);g.fillStyle=p.c;g.fillRect(p.x,p.y,p.s*devicePixelRatio/1.5,p.s*devicePixelRatio);}); parts=parts.filter(p=>p.a>0&&p.y<fx.height); if(parts.length) requestAnimationFrame(loop); else g.clearRect(0,0,fx.width,fx.height); }
+let hello=null; document.getElementById('hello').onclick=async(e)=>{ if(hello){ stopNode(hello,.2); hello=null; e.target.textContent='▶ Hear from Darby'; return; } const was=soundOn; soundOn=true; hello=await play('hello',1); soundOn=was; if(hello){ e.target.textContent='■ Stop'; hello.s.onended=()=>{hello=null; e.target.textContent='▶ Hear from Darby';}; } };
+document.getElementById('snd').onclick=(e)=>{ soundOn=!soundOn; e.target.setAttribute('aria-pressed',soundOn); e.target.textContent=soundOn?'Sound on':'Sound off'; if(!soundOn&&spinSrc){stopNode(spinSrc);spinSrc=null;} };
+// start on a friendly landing: Sydney, candlelit, special
+(function(){ const init=[11,2,2]; init.forEach((t,i)=>{ const idx=SETS[i].length*2+t; strips[i].style.transform=`translateY(${-idx*H}px)`; result[i]=t; }); })();
+</script>
+</body>
+</html>
