@@ -1,0 +1,47 @@
+{
+ "hero.jpg": {
+  "tool": "higgsfield",
+  "prompt": "art deco slot machine on a terrace over Sydney Harbour (gpt_image_2_5)"
+ },
+ "snd/hello.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "Darby hello voiceover, voice Alex (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "snd/tick.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "single crisp mechanical slot reel tick (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "snd/chime.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "small cheerful art deco slot win chime (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "build/v1.jpg": {
+  "tool": "derived:screenshot of v1 page"
+ },
+ "build/v2.jpg": {
+  "tool": "derived:screenshot of v2 page"
+ },
+ "build/tests.jpg": {
+  "tool": "derived:Playwright test screenshots"
+ },
+ "snd/lever.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "slot lever pull (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "snd/spin.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "slot reels spinning loop (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "snd/stop.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "reel stop clunk (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "snd/jackpot.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "jackpot payout (flow SH9Bssp0GSEVbiYySi4p)"
+ },
+ "snd/click.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "button click (flow SH9Bssp0GSEVbiYySi4p)"
+ }
+}
