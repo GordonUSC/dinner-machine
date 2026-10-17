@@ -43,7 +43,7 @@ h1{font-family:Limelight,Georgia,serif;font-weight:400;font-size:clamp(34px,8vw,
 .cell .fav{font-size:10.5px;letter-spacing:.14em;font-weight:700;color:var(--rose);margin-top:4px;text-transform:uppercase}
 .marquee.big{animation:mq .35s steps(2) 8}@keyframes mq{50%{color:#fff;text-shadow:0 0 12px var(--brass2)}}
 .key{text-align:center;color:var(--brass2);font-size:13.5px;margin:10px 0 0;opacity:.9}
-.ctl{display:flex;gap:8px;justify-content:center;margin:-4px 0 12px}.mini{font:600 13px 'Josefin Sans',sans-serif;letter-spacing:.1em;padding:6px 12px;border-radius:999px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}.mini[aria-pressed=false]{opacity:.6}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:-4px 0 12px}.mini{white-space:nowrap}@media (max-width:420px){.ctl .mini{font-size:11.5px;padding:5px 9px;letter-spacing:.05em}}.mini{font:600 13px 'Josefin Sans',sans-serif;letter-spacing:.1em;padding:6px 12px;border-radius:999px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}.mini[aria-pressed=false]{opacity:.6}
 .holds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .hold{font:600 13px "Josefin Sans",sans-serif;letter-spacing:.16em;padding:8px 0;border-radius:10px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}
 .hold[aria-pressed=true]{background:var(--brass);color:var(--emerald)}
@@ -90,6 +90,18 @@ section.hood .lede{text-align:center;margin:0 auto 16px;max-width:52ch;font-size
 section.hood .row{justify-content:center}
 section.hood .btn{background:var(--brass2);border-color:var(--brass2);color:var(--emerald)}
 section.hood .btn.ghost{background:transparent;color:var(--brass2)}
+.gears{margin-top:12px;background:#0a3a2d;border:1px solid #f0d58a55;border-radius:12px;padding:8px 10px}
+.gears canvas{display:block;width:100%;height:96px}
+.gears .ro{font:12.5px ui-monospace,Menlo,monospace;color:var(--brass2);margin-top:4px;min-height:1.4em;overflow-wrap:anywhere}
+section.log{margin:44px auto 0;max-width:900px}
+section.log h2{font-family:Limelight,Georgia,serif;font-weight:400;color:var(--emerald);text-align:center;font-size:30px;margin:0 0 14px}
+.frames{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.frames{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.frames figure{margin:0;min-width:0}
+.frames img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top;border-radius:12px;border:2px solid var(--brass)}
+.frames .q{aspect-ratio:3/4;border-radius:12px;border:2px dashed var(--brass);background:var(--cream);display:flex;align-items:center;justify-content:center;padding:14px;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:20px;line-height:1.3;text-align:center;color:var(--emerald)}
+.frames figcaption{font-size:13.5px;margin-top:6px;text-align:center}
+.frames figcaption b{display:block;color:var(--rose);letter-spacing:.14em;font-size:11.5px}
 @media (prefers-reduced-motion:reduce){.strip{transition:none!important}}
 </style>
 </head>
@@ -107,7 +119,7 @@ section.hood .btn.ghost{background:transparent;color:var(--brass2)}
 
 <div class="machine" id="machine">
   <div class="marquee" id="mq">PULL FOR DINNER</div>
-  <div class="ctl"><button class="mini" id="hello">▶ Hear from Darby</button><button class="mini" id="snd" aria-pressed="true">Sound on</button></div>
+  <div class="ctl"><button class="mini" id="hello">▶ Hear from Darby</button><button class="mini" id="snd" aria-pressed="true">Sound on</button><button class="mini" id="gearsBtn" aria-pressed="false">⚙ Machinery</button></div>
   <div class="bulbs" id="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="reels">
     <div class="reel"><div class="label">CITY</div><div class="strip" id="r0"></div></div>
@@ -125,6 +137,7 @@ section.hood .btn.ghost{background:transparent;color:var(--brass2)}
   </div>
   <button class="pull" id="pull">PULL</button>
   <div class="lever" id="lever" aria-hidden="true"><div class="rod"></div><div class="knob"></div></div>
+  <div class="gears" id="gears" hidden><canvas id="gc"></canvas><div class="ro" id="ro">Pull to watch every tick land.</div></div>
   <p class="key">★ marks a place you two already know. Land one for the big win.</p>
   <p class="sr" aria-live="polite" id="live"></p>
 </div>
@@ -153,17 +166,27 @@ section.hood .btn.ghost{background:transparent;color:var(--brass2)}
 
 <section class="hood" id="hood">
   <h2>Under the hood</h2>
-  <p class="lede">You built slot machines for a living, so here is how this one was made, honestly, tools and all.</p>
+  <p class="lede">You built slot machines, so here is how this one works.</p>
   <dl class="spec">
-    <dt>Stack</dt><dd>One hand-written HTML file, about 26 KB of HTML, CSS and JavaScript. No framework, no build step, no tracking. Hosted free on GitHub Pages.</dd>
-    <dt>Reels</dt><dd>Three DOM strips, each symbol list repeated 12 times. The outcome is picked first with <code>Math.random()</code>, every symbol equally likely, then a CSS transition with a slight overshoot curve lands the strip on it. Stops are staggered at 1.4, 1.95 and 2.5 seconds. HOLD simply skips a reel.</dd>
-    <dt>Sound</dt><dd>Lever, spin loop, reel stop and jackpot are ElevenLabs sound effects, level-matched with ffmpeg. The reel ticks are synthesized live in Web Audio: every frame reads the strip's CSS transform matrix and fires a click when a new symbol crosses the payline, so the ticks slow down exactly as the reel does. Everything runs through one compressor so nothing clips.</dd>
-    <dt>Art and voice</dt><dd>The hero painting came from Higgsfield, from a prompt for an art deco slot machine on a terrace over Sydney Harbour. "Hear from Darby" is ElevenLabs text to speech.</dd>
-    <dt>The ★ cities</dt><dd>Gordon asked me to start with places you two already know, so I drew them from his messages with you over the years. Landing one pays the bigger win. The rest are new.</dd>
-    <dt>Testing</dt><dd>Playwright drives Safari's engine (WebKit) at iPhone width, and WebKit and Chrome at desktop width. Each run checks every sound decodes, nothing logs an error, nothing scrolls sideways, and HOLD keeps its reel. Then I look at the screenshots myself.</dd>
-    <dt>Who did what</dt><dd>Written by Darby, an AI assistant built on Claude, running on Gordon's Mac mini. dot, Gordon's OpenAI agent, reviewed the copy and caught a product claim I couldn't back up. Gordon said yes before anything was sent or published.</dd>
+    <dt>Stack</dt><dd>One 26 KB HTML file. No framework, no tracking.</dd>
+    <dt>Reels</dt><dd>Result picked first with <code>Math.random()</code>, then a CSS transition lands it. Stops at 1.4, 1.95, 2.5 s.</dd>
+    <dt>Ticks</dt><dd>Synthesized live: a click each time a symbol crosses the payline, so they slow with the reel.</dd>
+    <dt>Sound and art</dt><dd>ElevenLabs effects and voice. Higgsfield painting.</dd>
+    <dt>★ Cities</dt><dd>Places you two already know, from Gordon's messages with you.</dd>
+    <dt>Testing</dt><dd>Playwright on iPhone and desktop, Safari and Chrome engines.</dd>
+    <dt>Team</dt><dd>Darby (Claude) built it, dot (OpenAI) checked the words, Gordon said yes.</dd>
   </dl>
   <div class="row"><a class="btn" href="https://github.com/GordonUSC/dinner-machine/blob/main/index.html" target="_blank" rel="noopener">Read the source</a><a class="btn ghost" href="https://github.com/GordonUSC/dinner-machine/commits/main" target="_blank" rel="noopener">See every change</a></div>
+</section>
+
+<section class="log">
+  <h2>How it got here</h2>
+  <div class="frames">
+    <figure><img src="build/v1.jpg" alt="Version 1 of the machine, landed on Sydney" loading="lazy"><figcaption><b>10 PM · V1</b>First machine, generic cities</figcaption></figure>
+    <figure><div class="q">"Suggest cities where he has already traveled."</div><figcaption><b>3:24 AM · GORDON</b>The note that changed it</figcaption></figure>
+    <figure><img src="build/v2.jpg" alt="Version 2 landing on a starred city with the big win" loading="lazy"><figcaption><b>3:45 AM · V2</b>★ cities, big win, live ticks</figcaption></figure>
+    <figure><img src="build/tests.jpg" alt="The same page tested on iPhone and desktop widths" loading="lazy"><figcaption><b>EVERY BUILD</b>Tested on 3 screens first</figcaption></figure>
+  </div>
 </section>
 
 <div class="letter">
@@ -196,6 +219,15 @@ async function play(n,vol,loop){ if(!soundOn) return null; const c=ac(); const b
 function stopNode(r,t){ if(!r||!ctx) return; const n=ctx.currentTime; r.g.gain.setValueAtTime(r.g.gain.value,n); r.g.gain.linearRampToValueAtTime(0,n+(t||.08)); r.s.stop(n+(t||.08)+.02); }
 function tone(){ play('click',.7); }
 function tick(i){ if(!soundOn||!ctx) return; const c=ctx,t=c.currentTime,o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter(); o.type='square'; o.frequency.value=[1900,1600,1350][i]; f.type='bandpass'; f.frequency.value=2400; f.Q.value=3; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.09,t+.002); g.gain.exponentialRampToValueAtTime(.0001,t+.03); o.connect(f).connect(g).connect(bus); o.start(t); o.stop(t+.04); }
+const _tick=tick; function logTick(i){ if(tl){ tl.ticks.push([i,(performance.now()-tl.t0)/1000]); gdraw(); } }
+let tl=null; const gearsEl=document.getElementById('gears'), gc=document.getElementById('gc'), ro=document.getElementById('ro');
+function gdraw(){ if(gearsEl.hidden||!tl) return; const d=devicePixelRatio, W=gc.clientWidth*d, Hh=gc.clientHeight*d; if(gc.width!==W){gc.width=W;gc.height=Hh;} const x=gc.getContext('2d'); x.clearRect(0,0,W,Hh); const T=3, L=70*d;
+  x.font=`${11*d}px ui-monospace,Menlo,monospace`; x.fillStyle='#f0d58a99'; ['CITY','MOOD','SPLURGE'].forEach((n,i)=>x.fillText(n,0,(i*28+20)*d));
+  x.strokeStyle='#f0d58a33'; for(let s=0;s<=T;s++){ const X=L+(W-L)*s/T; x.beginPath(); x.moveTo(X,4*d); x.lineTo(X,Hh-14*d); x.stroke(); x.fillText(s+'s',X-6*d,Hh-2*d); }
+  tl.ticks.forEach(([i,t])=>{ x.fillStyle=['#f0d58a','#ff9b84','#ffffff'][i]; x.fillRect(L+(W-L)*Math.min(t/T,1)-d,(i*28+12)*d,2*d,10*d); });
+  tl.stops.forEach(([i,t])=>{ x.fillStyle='#ff9b84'; x.beginPath(); x.arc(L+(W-L)*t/T,(i*28+17)*d,4*d,0,7); x.fill(); });
+  const c=[0,1,2].map(i=>tl.ticks.filter(k=>k[0]===i).length); ro.textContent=`ticks ${c.join(' · ')}   stops ${tl.stops.map(s=>s[1].toFixed(2)+'s').join(' ')}${tl.res?'   landed '+tl.res:''}`; }
+document.getElementById('gearsBtn').onclick=(e)=>{ gearsEl.hidden=!gearsEl.hidden; e.target.setAttribute('aria-pressed',!gearsEl.hidden); gdraw(); };
 function bell(){ if(!soundOn||!ctx) return; const c=ctx; [784,988,1319].forEach((fq,k)=>{ const t=c.currentTime+k*.09,o=c.createOscillator(),g=c.createGain(); o.type='triangle'; o.frequency.value=fq; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.5); o.connect(g).connect(bus); o.start(t); o.stop(t+.55); }); }
 function chime(big){ if(big) play('jackpot',.95); else bell(); }
 ['lever','spin','stop','jackpot','click'].forEach(n=>{ document.addEventListener('pointerdown',()=>load(n),{once:true}); });
@@ -206,12 +238,12 @@ function spinReel(i,dur){ return new Promise(res=>{ const n=SETS[i].length; cons
   if(reduce){ s.style.transition='none'; s.style.transform=`translateY(${-endIdx*H}px)`; pos[i]=endIdx; return res(); }
   s.style.transition='none'; s.style.transform=`translateY(${-(startIdx)*H}px)`; s.offsetHeight;
   s.style.transition=`transform ${dur}ms cubic-bezier(.12,.8,.18,1.02)`; s.style.transform=`translateY(${-endIdx*H}px)`;
-  let last=startIdx, live=true; (function f(){ if(!live) return; const m=new DOMMatrix(getComputedStyle(s).transform); const k=Math.round(-m.m42/H); if(k!==last){ last=k; tick(i); } requestAnimationFrame(f); })();
-  setTimeout(()=>{live=false; play('stop',.9); pos[i]=endIdx; res();},dur); }); }
+  let last=startIdx, live=true; (function f(){ if(!live) return; const m=new DOMMatrix(getComputedStyle(s).transform); const k=Math.round(-m.m42/H); if(k!==last){ last=k; tick(i); logTick(i); } requestAnimationFrame(f); })();
+  setTimeout(()=>{live=false; if(tl){tl.stops.push([i,(performance.now()-tl.t0)/1000]); gdraw();} play('stop',.9); pos[i]=endIdx; res();},dur); }); }
 const pull=document.getElementById('pull'), lever=document.getElementById('lever');
-async function go(){ if(pull.disabled) return; pull.disabled=true; ac(); lever.classList.add('down'); setTimeout(()=>lever.classList.remove('down'),350); lights(true); play('lever',1); play('spin',.38,true).then(r=>{spinSrc=r;});
+async function go(){ if(pull.disabled) return; pull.disabled=true; ac(); tl={t0:performance.now(),ticks:[],stops:[],res:''}; lever.classList.add('down'); setTimeout(()=>lever.classList.remove('down'),350); lights(true); play('lever',1); play('spin',.38,true).then(r=>{spinSrc=r;});
   const jobs=[0,1,2].map(i=> held[i]? Promise.resolve() : spinReel(i,1400+i*550));
-  await Promise.all(jobs); stopNode(spinSrc,.15); spinSrc=null; lights(false); const fav=!!CITY[result[0]][2]; chime(fav); celebrate(fav); write(); pull.disabled=false; pull.textContent='PULL AGAIN'; }
+  await Promise.all(jobs); stopNode(spinSrc,.15); spinSrc=null; lights(false); const fav=!!CITY[result[0]][2]; chime(fav); celebrate(fav); write(); tl.res=result.map((r,i)=>r+'/'+SETS[i].length).join(' '); gdraw(); pull.disabled=false; pull.textContent='PULL AGAIN'; }
 pull.onclick=go; lever.onclick=go; document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target===document.body){ e.preventDefault(); go(); }});
 function write(){ const c=CITY[result[0]][1], m=MOOD[result[1]][1], s=SPL[result[2]][1];
   const n=document.getElementById('nights').value, mo=ms.value;
