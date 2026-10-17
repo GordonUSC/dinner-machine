@@ -46,7 +46,7 @@ h1{font-family:Limelight,Georgia,serif;font-weight:400;font-size:clamp(34px,8vw,
 .ctl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:-4px 0 12px}.mini{white-space:nowrap}@media (max-width:420px){.ctl .mini{font-size:11.5px;padding:5px 9px;letter-spacing:.05em}}.mini{font:600 13px 'Josefin Sans',sans-serif;letter-spacing:.1em;padding:6px 12px;border-radius:999px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}.mini[aria-pressed=false]{opacity:.6}
 .holds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .hold{font:600 13px "Josefin Sans",sans-serif;letter-spacing:.16em;padding:8px 0;border-radius:10px;border:2px solid var(--brass);background:transparent;color:var(--brass2);cursor:pointer}
-.hold[aria-pressed=true]{background:var(--brass);color:var(--emerald)}
+.hold:disabled{opacity:.5;cursor:default}.hold[aria-pressed=true]{background:var(--brass);color:var(--emerald)}
 .pull{display:block;width:100%;margin-top:14px;font:400 26px Limelight,Georgia,serif;letter-spacing:.06em;padding:14px;border-radius:16px;border:0;cursor:pointer;color:var(--emerald);background:linear-gradient(180deg,var(--brass2),var(--brass));box-shadow:0 6px 0 #8a6a22,0 10px 20px -6px #000a;transition:transform .08s,box-shadow .08s}
 .pull:active{transform:translateY(5px);box-shadow:0 1px 0 #8a6a22}
 .pull:disabled{opacity:.7;cursor:default}
@@ -201,15 +201,15 @@ section.log h2{font-family:Limelight,Georgia,serif;font-weight:400;color:var(--e
 <script>
 const CITY=[["🌈","West Hollywood",1],["🥐","Paris"],["🎺","New Orleans",1],["🌉","Lisbon"],["🗼","Tokyo",1],["🌮","Mexico City"],["⛩️","Kyoto",1],["💃","Buenos Aires"],["🏝️","Koh Samui",1],["🚲","Copenhagen"],["⛵","Sydney",2],["🏔️","Cape Town"]];
 const MOOD=[["🌊","a water view"],["🔪","a chef's counter"],["🕯️","candlelit and quiet"],["🎉","loud and joyful"],["🧺","a market crawl"],["🎩","an old-school classic"],["🌱","a garden table"],["🌈","a queer-owned favorite"]];
-const SPL=[["🪙","easy, under $40 each"],["💵","nice, $40 to $90 each"],["💎","special, $90 to $200 each"],["👑","the big one, no ceiling"]];
+const SPL=[["🪙","easy, under $40 each"],["💵","nice, $40 to $90 each"],["💎","special, $90 to $200 each"],["👑","the big one, a true splurge"]];
 const SETS=[CITY,MOOD,SPL], H=132, REP=12;
 const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const ms=document.getElementById('month'); const now=new Date();
-for(let k=1;k<=12;k++){const m=months[(now.getMonth()+k)%12]; const o=document.createElement('option'); o.textContent=m; if(m==='June')o.selected=true; ms.appendChild(o);}
+for(let k=1;k<=12;k++){const mi=(now.getMonth()+k)%12, y=now.getFullYear()+Math.floor((now.getMonth()+k)/12); const o=document.createElement('option'); o.textContent=months[mi]+' '+y; if(mi===5)o.selected=true; ms.appendChild(o);}
 const strips=[0,1,2].map(i=>document.getElementById('r'+i));
-const pos=[0,0,0], held=[false,false,false], result=[0,0,0];
+const pos=[0,0,0], held=[false,false,false], result=[0,0,0]; let spinning=false; const holds=[...document.querySelectorAll('.hold')];
 strips.forEach((s,i)=>{let h='';for(let r=0;r<REP;r++)SETS[i].forEach(([ic,t,f])=>h+=`<div class="cell"><span class="ico">${ic}</span><span class="t">${f?'★ ':''}${t}</span>${f===1?'<span class="fav">old favorite</span>':f===2?'<span class="fav">home</span>':''}</div>`);s.innerHTML=h;});
-document.querySelectorAll('.hold').forEach(b=>b.onclick=()=>{const i=+b.dataset.i; if(!pos.some(p=>p)) return; held[i]=!held[i]; b.setAttribute('aria-pressed',held[i]); play('click',.7);});
+document.querySelectorAll('.hold').forEach(b=>b.onclick=()=>{const i=+b.dataset.i; if(spinning) return; held[i]=!held[i]; b.setAttribute('aria-pressed',held[i]); play('click',.7);});
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let ctx=null, bufs={}, soundOn=true, spinSrc=null;
 let bus=null;
@@ -241,14 +241,14 @@ function spinReel(i,dur){ return new Promise(res=>{ const n=SETS[i].length; cons
   let last=startIdx, live=true; (function f(){ if(!live) return; const m=new DOMMatrix(getComputedStyle(s).transform); const k=Math.round(-m.m42/H); if(k!==last){ last=k; tick(i); logTick(i); } requestAnimationFrame(f); })();
   setTimeout(()=>{live=false; if(tl){tl.stops.push([i,(performance.now()-tl.t0)/1000]); gdraw();} play('stop',.9); pos[i]=endIdx; res();},dur); }); }
 const pull=document.getElementById('pull'), lever=document.getElementById('lever');
-async function go(){ if(pull.disabled) return; pull.disabled=true; ac(); tl={t0:performance.now(),ticks:[],stops:[],res:''}; lever.classList.add('down'); setTimeout(()=>lever.classList.remove('down'),350); lights(true); play('lever',1); play('spin',.38,true).then(r=>{spinSrc=r;});
+async function go(){ if(pull.disabled) return; pull.disabled=true; spinning=true; holds.forEach(h=>h.disabled=true); ac(); tl={t0:performance.now(),ticks:[],stops:[],res:''}; lever.classList.add('down'); setTimeout(()=>lever.classList.remove('down'),350); lights(true); play('lever',1); play('spin',.38,true).then(r=>{spinSrc=r;});
   const jobs=[0,1,2].map(i=> held[i]? Promise.resolve() : spinReel(i,1400+i*550));
-  await Promise.all(jobs); stopNode(spinSrc,.15); spinSrc=null; lights(false); const fav=!!CITY[result[0]][2]; chime(fav); celebrate(fav); write(); tl.res=result.map((r,i)=>r+'/'+SETS[i].length).join(' '); gdraw(); pull.disabled=false; pull.textContent='PULL AGAIN'; }
+  await Promise.all(jobs); stopNode(spinSrc,.15); spinSrc=null; lights(false); const fav=!!CITY[result[0]][2]; chime(fav); celebrate(fav); write(); tl.res=result.map((r,i)=>r+'/'+SETS[i].length).join(' '); gdraw(); pull.disabled=false; spinning=false; holds.forEach(h=>h.disabled=false); pull.textContent='PULL AGAIN'; }
 pull.onclick=go; lever.onclick=go; document.addEventListener('keydown',e=>{ if(e.code==='Space' && e.target===document.body){ e.preventDefault(); go(); }});
 function write(){ const c=CITY[result[0]][1], m=MOOD[result[1]][1], s=SPL[result[2]][1];
   const n=document.getElementById('nights').value, mo=ms.value;
   const f=CITY[result[0]][2]; const extra=f===1?` We've been before, so skip the obvious tourist picks and surprise us.`:f===2?` We live here, so find us somewhere new.`:'';
-  const txt=f===2?`We're David and Ian, at home in Sydney, planning a night out in ${mo}. One dinner should be ${m}, at ${s}.${extra}\n\n`:`We're David and Ian from Sydney, spending ${n} nights in ${c} in ${mo}. One dinner should be ${m}, at ${s}.${extra}\n\nGive us 5 restaurants that fit, with why each one is right for us, price per person, how far ahead to book, and the official booking link.\n\nIf you can, prepare the booking for 2 people and stop before submitting, so I can check the date, time, deposit and cancellation terms.`;
+  const txt=f===2?`We're David and Ian, at home in Sydney, planning a night out in ${mo}. One dinner should be ${m}, at ${s}.${extra}\n\n`:`We're David and Ian from Sydney, spending ${n} nights in ${c} in ${mo}. One dinner should be ${m}, at ${s}.${extra}\n\nPrices are per person in Australian dollars. Give us 5 restaurants that fit, with why each one is right for us, price per person, how far ahead to book, and the official booking link.\n\nIf you can, prepare the booking for 2 people and stop before submitting, so I can check the date, time, deposit and cancellation terms.`;
   document.getElementById('prompt').textContent=txt; document.getElementById('live').textContent=`Landed: ${c}, ${m}, ${s}.`; }
 document.getElementById('copy').onclick=async(e)=>{ const t=document.getElementById('prompt').textContent; try{ await navigator.clipboard.writeText(t); e.target.textContent='Copied ✓'; }catch(err){ const r=document.createRange(); r.selectNodeContents(document.getElementById('prompt')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); e.target.textContent='Selected, now copy'; } setTimeout(()=>e.target.textContent='Copy the words',1800); };
 const fx=document.getElementById('fx'), g=fx.getContext('2d'); let parts=[];
@@ -259,8 +259,9 @@ function confetti(N){ N=N||120; if(reduce) return; const r=document.getElementBy
 function loop(){ g.clearRect(0,0,fx.width,fx.height); parts.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;p.a-=.008;g.globalAlpha=Math.max(p.a,0);g.fillStyle=p.c;g.fillRect(p.x,p.y,p.s*devicePixelRatio/1.5,p.s*devicePixelRatio);}); parts=parts.filter(p=>p.a>0&&p.y<fx.height); if(parts.length) requestAnimationFrame(loop); else g.clearRect(0,0,fx.width,fx.height); }
 let hello=null; document.getElementById('hello').onclick=async(e)=>{ if(hello){ stopNode(hello,.2); hello=null; e.target.textContent='▶ Hear from Darby'; return; } const was=soundOn; soundOn=true; hello=await play('hello',1); soundOn=was; if(hello){ e.target.textContent='■ Stop'; hello.s.onended=()=>{hello=null; e.target.textContent='▶ Hear from Darby';}; } };
 document.getElementById('snd').onclick=(e)=>{ soundOn=!soundOn; e.target.setAttribute('aria-pressed',soundOn); e.target.textContent=soundOn?'Sound on':'Sound off'; if(!soundOn&&spinSrc){stopNode(spinSrc);spinSrc=null;} };
+document.getElementById('nights').onchange=write; ms.onchange=write;
 // start on a friendly landing: West Hollywood, loud and joyful, nice (see you at the Abbey in June)
-(function(){ const init=[0,3,1]; init.forEach((t,i)=>{ const idx=SETS[i].length*2+t; strips[i].style.transform=`translateY(${-idx*H}px)`; result[i]=t; }); })();
+(function(){ const init=[0,3,1]; init.forEach((t,i)=>{ const idx=SETS[i].length*2+t; strips[i].style.transform=`translateY(${-idx*H}px)`; result[i]=t; pos[i]=idx; }); write(); })();
 </script>
 </body>
 </html>
